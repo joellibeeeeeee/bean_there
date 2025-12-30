@@ -64,44 +64,59 @@
         color: #FDF9F0;
     }
 
-    .order-card {
+    .orders-table-container {
         background-color: #FDF9F0;
         border: 2px solid #4A2C2A;
         border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 25px;
-        transition: all 0.3s ease;
+        overflow: hidden;
     }
 
-    .order-card:hover {
-        box-shadow: 0px 8px 20px rgba(74, 44, 42, 0.15);
-        transform: translateY(-3px);
-    }
-
-    .order-top {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr auto;
-        gap: 20px;
-        align-items: center;
-    }
-
-    .details-col {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .order-info-label {
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
         font-family: 'Poppins', sans-serif;
-        font-size: 0.85rem;
-        color: #7a5c5a;
-        margin-bottom: 5px;
     }
 
-    .order-info-value {
-        font-family: 'Poppins', sans-serif;
+    .orders-table thead {
+        background-color: #4A2C2A;
+        color: #FDF9F0;
+    }
+
+    .orders-table th {
+        padding: 18px 20px;
+        text-align: left;
         font-weight: 600;
-        font-size: 1rem;
-        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .orders-table th:last-child {
+        text-align: center;
+    }
+
+    .orders-table tbody tr {
+        border-bottom: 1px solid rgba(74, 44, 42, 0.15);
+        transition: background-color 0.2s;
+    }
+
+    .orders-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .orders-table tbody tr:hover {
+        background-color: rgba(74, 44, 42, 0.05);
+    }
+
+    .orders-table td {
+        padding: 20px;
+        font-size: 0.95rem;
+    }
+
+    .orders-table td:last-child {
+        text-align: center;
+    }
+
+    .order-id {
+        font-weight: 600;
     }
 
     .status-badge {
@@ -109,7 +124,7 @@
         padding: 6px 14px;
         border-radius: 20px;
         font-family: 'Poppins', sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
     }
 
@@ -138,34 +153,15 @@
         color: #721C24;
     }
 
-    .order-bottom {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        padding-top: 20px;
-    }
-
-    .order-items-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .order-items-list li {
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-        color: #4A2C2A;
-        margin-bottom: 6px;
-    }
-
     .details-btn {
         background-color: #4A2C2A;
         color: #FDF9F0;
         border: none;
-        padding: 12px 30px;
-        border-radius: 10px;
+        padding: 10px 24px;
+        border-radius: 8px;
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
+        font-size: 0.85rem;
         cursor: pointer;
         text-decoration: none;
         transition: opacity 0.3s;
@@ -185,19 +181,23 @@
             font-size: 2.2rem;
         }
 
-        .order-top {
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .orders-table-container {
+            overflow-x: auto;
         }
 
-        .details-col {
-            grid-column: 1 / -1;
-            justify-content: center;
+        .orders-table {
+            min-width: 600px;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 15px 12px;
+            font-size: 0.85rem;
         }
 
         .details-btn {
-            width: 100%;
-            text-align: center;
+            padding: 8px 16px;
+            font-size: 0.8rem;
         }
     }
 </style>
@@ -214,34 +214,35 @@
             <a href="{{ route('welcome') }}" class="shop-btn">Start Shopping</a>
         </div>
     @else
-        <div class="orders-list">
-            @foreach($orders as $order)
-                <div class="order-card">
-                    <div class="order-top">
-                        <div>
-                            <p class="order-info-label">Order ID</p>
-                            <p class="order-info-value">#{{ $order->id }}</p>
-                        </div>
-                        <div>
-                            <p class="order-info-label">Date</p>
-                            <p class="order-info-value">{{ $order->placed_at->format('M d, Y') }}</p>
-                        </div>
-                        <div>
-                            <p class="order-info-label">Status</p>
-                            <span class="status-badge status-{{ $order->status }}">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                        </div>
-                        <div>
-                            <p class="order-info-label">Total</p>
-                            <p class="order-info-value">₱{{ number_format($order->total, 2) }}</p>
-                        </div>
-                        <div class="details-col">
-                            <a href="{{ route('orders.show', $order) }}" class="details-btn">View Details</a>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+        <div class="orders-table-container">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($orders as $order)
+                        <tr>
+                            <td class="order-id">#{{ $order->id }}</td>
+                            <td>{{ $order->placed_at->format('M d, Y') }}</td>
+                            <td>
+                                <span class="status-badge status-{{ $order->status }}">
+                                    {{ ucfirst($order->status) }}
+                                </span>
+                            </td>
+                            <td>₱{{ number_format($order->total, 2) }}</td>
+                            <td>
+                                <a href="{{ route('orders.show', $order) }}" class="details-btn">View Details</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     @endif
 </div>

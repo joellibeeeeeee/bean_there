@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\CartController;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -27,6 +28,10 @@ class AuthController extends Controller
         if (Auth::attempt($validated, $request->boolean('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
+
+            // Load cart from database and merge with session cart
+            CartController::loadCartFromDatabase($user->id);
+
             return redirect()->intended($this->redirectForRole($user))->with('success', 'Logged in successfully.');
         }
 
@@ -57,6 +62,9 @@ class AuthController extends Controller
         $user->assignRole('customer');
         event(new Registered($user));
         Auth::login($user);
+
+        // Sync session cart to database for new user
+        CartController::loadCartFromDatabase($user->id);
 
         return redirect($this->redirectForRole($user))->with('success', 'Account created and logged in.');
     }

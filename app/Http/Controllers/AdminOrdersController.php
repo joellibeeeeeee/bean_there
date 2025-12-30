@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 
 class AdminOrdersController extends Controller
 {
-    public const STATUSES = ['pending', 'processing', 'completed', 'cancelled'];
-
     public function index()
     {
         $orders = Order::with(['user', 'items.product'])
@@ -29,14 +27,14 @@ class AdminOrdersController extends Controller
         return view('admin.orders.show', [
             'order' => $order,
             'shipping' => $shipping,
-            'statuses' => self::STATUSES,
+            'statuses' => Order::STATUSES,
         ]);
     }
 
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|in:' . implode(',', self::STATUSES),
+            'status' => 'required|in:' . implode(',', Order::STATUSES),
         ]);
 
         $order->update(['status' => $validated['status']]);

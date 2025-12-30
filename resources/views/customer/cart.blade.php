@@ -249,6 +249,11 @@
         transition: all 0.3s ease;
     }
 
+    .btn-go-menu:hover {
+        background: #4A2C2A;
+        color: #FDF9F0;
+    }
+
     /* MOBILE RESPONSIVENESS */
     @media (max-width: 768px) {
         .cart-table-header { display: none; }
@@ -268,7 +273,9 @@
 <div class="cart-section">
     <div class="cart-header">
         <h1 class="cart-title">Your Cart</h1>
-        <a href="{{ route('menu.pastries') }}" class="continue-shopping">Continue Shopping</a>
+        @if(session('cart') && count(session('cart')) > 0)
+            <a href="{{ route('menu.pastries') }}" class="continue-shopping">Continue Shopping</a>
+        @endif
     </div>
 
     {{-- CHECK IF SESSION CART HAS ITEMS --}}
@@ -338,7 +345,6 @@
                 
                 {{-- REDIRECT TO SHIPPING/CHECKOUT PAGE --}}
                 <form action="{{ route('checkout') }}" method="GET" id="checkout-form">
-                    @csrf
                     <input type="hidden" name="selected_items" id="selected-items-input" value="">
                     <input type="hidden" name="instructions" id="instructions-input" value="">
                     <button type="submit" class="checkout-btn" id="checkout-btn">Check out</button>
@@ -456,11 +462,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // RELOAD PAGE TO UPDATE TOTALS
                     location.reload();
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(() => {});
         }
     });
 </script>

@@ -36,6 +36,32 @@
             box-sizing: border-box; 
         }
 
+        .nav-greeting {
+            min-width: 150px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4A2C2A;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1.5px solid #4A2C2A;
+            color: #4A2C2A;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #4A2C2A;
+            color: #FDF9F0;
+        }
+
         .nav-links {
             display: flex;
             list-style: none;
@@ -266,7 +292,11 @@
 <body>
 
     <nav class="navbar">
-        <div style="width: 100px;"></div> 
+        <div class="nav-greeting">
+            @auth
+                <span>Hello, {{ Auth::user()->name }}!</span>
+            @endauth
+        </div>
 
         <ul class="nav-links">
             <li><a href="{{ route('welcome') }}" class="{{ request()->routeIs('welcome') ? 'active-page' : '' }}">Home</a></li>
@@ -291,7 +321,12 @@
                 </div>
             </div>
 
-            <div class="icon-circle" id="navTrackBtn" style="cursor: pointer;" @auth onclick="window.location.href='{{ route('orders.index') }}'" @endauth>
+            <div class="icon-circle" id="navTrackBtn" style="cursor: pointer;" 
+                @auth 
+                    onclick="window.location.href='{{ route('orders.index') }}'" 
+                @else 
+                    onclick="alert('Please login first to view your orders.'); window.location.href='{{ route('login') }}';" 
+                @endauth>
                 <img src="{{ asset('images/Track.png') }}" alt="Track">
             </div>
             
@@ -304,18 +339,17 @@
                 @endif
             </a>
 
-            <a href="{{ route('login') }}" class="icon-circle {{ request()->is('login') || request()->is('register') ? 'active-page' : '' }}">
-                <img src="{{ asset('images/User Profile.png') }}" alt="Profile">
-            </a>
+            @guest
+                <a href="{{ route('login') }}" class="icon-circle {{ request()->is('login') || request()->is('register') ? 'active-page' : '' }}">
+                    <img src="{{ asset('images/User Profile.png') }}" alt="Profile">
+                </a>
+            @endguest
 
             @auth
-                <div style="margin-left: 8px; color: #4A2C2A; font-size: 12px;">
-                    <div style="margin-bottom: 4px;">{{ Auth::user()->name }}</div>
-                    <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
-                        @csrf
-                        <button type="submit" style="background: none; border: none; color: #4A2C2A; cursor: pointer; font-size: 12px; text-decoration: underline;">Logout</button>
-                    </form>
-                </div>
+                <form method="POST" action="{{ route('logout') }}" style="margin: 0; margin-left: 5px;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
             @endauth
         </div>
     </nav>

@@ -243,7 +243,7 @@
         <div class="info-card">
             <h3>Shipping Policy</h3>
             <p>Read our shipping policy to understand how we process our deliveries and pick-ups.</p>
-            <a href="/shipping" class="btn-brand">Read Here</a>
+            <a href="/shipping-policy" class="btn-brand">Read Here</a>
         </div>
     </div>
 </section>

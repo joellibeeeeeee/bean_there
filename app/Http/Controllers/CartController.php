@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\CartItem;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -25,7 +28,7 @@ class CartController extends Controller
         if (isset($cart[$id])) {
             $cart[$id]['quantity'] += $qty;
         } else {
-            $product = \App\Models\Product::find($id);
+            $product = Product::find($id);
             $cart[$id] = [
                 'name' => $product->name,
                 'quantity' => $qty,
@@ -35,6 +38,12 @@ class CartController extends Controller
         }
 
         session()->put('cart', $cart);
+
+        // Sync to database if user is logged in
+        if (Auth::check()) {
+            $this->syncCartToDatabase();
+        }
+
         return redirect()->back()->with('success', 'Added to cart!');
     }
 
@@ -48,6 +57,12 @@ class CartController extends Controller
         if (isset($cart[$validated['id']])) {
             $cart[$validated['id']]['quantity'] = (int) $validated['quantity'];
             session()->put('cart', $cart);
+
+            // Sync to database if user is logged in
+            if (Auth::check()) {
+                $this->syncCartToDatabase();
+            }
+
             return response()->json(['success' => true]);
         }
         return response()->json(['success' => false], 404);
@@ -62,7 +77,69 @@ class CartController extends Controller
         if (isset($cart[$validated['id']])) {
             unset($cart[$validated['id']]);
             session()->put('cart', $cart);
+
+            // Sync to database if user is logged in
+            if (Auth::check()) {
+                $this->syncCartToDatabase();
+            }
         }
         return redirect()->back()->with('success', 'Item removed.');
+    }
+
+    /**
+     * Sync session cart to database for logged-in user
+     */
+    protected function syncCartToDatabase()
+    {
+        $userId = Auth::id();
+        $cart = session()->get('cart', []);
+
+        // Clear existing cart items for this user
+        CartItem::where('user_id', $userId)->delete();
+
+        // Insert current cart items
+        foreach ($cart as $productId => $item) {
+            CartItem::create([
+                'user_id' => $userId,
+                'product_id' => $productId,
+                'quantity' => $item['quantity'],
+            ]);
+        }
+    }
+
+    /**
+     * Load cart from database to session (called on login)
+     */
+    public static function loadCartFromDatabase($userId)
+    {
+        $cartItems = CartItem::where('user_id', $userId)->with('product')->get();
+        $sessionCart = session()->get('cart', []);
+
+        foreach ($cartItems as $item) {
+            $productId = $item->product_id;
+            if (isset($sessionCart[$productId])) {
+                // Merge: add quantities
+                $sessionCart[$productId]['quantity'] += $item->quantity;
+            } else {
+                $sessionCart[$productId] = [
+                    'name' => $item->product->name,
+                    'quantity' => $item->quantity,
+                    'price' => (float) $item->product->price,
+                    'image' => $item->product->image_url,
+                ];
+            }
+        }
+
+        session()->put('cart', $sessionCart);
+
+        // Update database with merged cart
+        CartItem::where('user_id', $userId)->delete();
+        foreach ($sessionCart as $productId => $item) {
+            CartItem::create([
+                'user_id' => $userId,
+                'product_id' => $productId,
+                'quantity' => $item['quantity'],
+            ]);
+        }
     }
 }
