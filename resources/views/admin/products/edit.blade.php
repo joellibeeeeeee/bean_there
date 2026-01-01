@@ -13,12 +13,22 @@
         </div>
         <div style="margin-bottom:12px;">
             <label>Category</label>
-            <select name="category_id" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <select name="category_id" id="category_id" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}" @selected($product->category_id === $cat->id)>{{ $cat->name }}</option>
                 @endforeach
             </select>
             @error('category_id')<div style="color:#c0392b;">{{ $message }}</div>@enderror
+        </div>
+        <div style="margin-bottom:12px;">
+            <label>Subcategory</label>
+            <select name="subcategory_id" id="subcategory_id" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                <option value="">-- Select Subcategory --</option>
+                @foreach($subcategories ?? [] as $sub)
+                    <option value="{{ $sub->id }}" data-category="{{ $sub->category_id }}" @selected($product->subcategory_id === $sub->id)>{{ $sub->name }}</option>
+                @endforeach
+            </select>
+            @error('subcategory_id')<div style="color:#c0392b;">{{ $message }}</div>@enderror
         </div>
         <div style="margin-bottom:12px;">
             <label>Price</label>
@@ -50,4 +60,30 @@
         </div>
     </form>
 </div>
+
+<script>
+    // FILTER SUBCATEGORIES BASED ON SELECTED CATEGORY
+    const categorySelect = document.getElementById('category_id');
+    const subcategorySelect = document.getElementById('subcategory_id');
+    const subcategoryOptions = subcategorySelect.querySelectorAll('option[data-category]');
+    const currentSubcategory = "{{ $product->subcategory_id }}";
+
+    function filterSubcategories() {
+        const selectedCategory = categorySelect.value;
+        
+        subcategoryOptions.forEach(option => {
+            if (option.dataset.category === selectedCategory) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+                if (option.value === subcategorySelect.value) {
+                    subcategorySelect.value = '';
+                }
+            }
+        });
+    }
+
+    categorySelect.addEventListener('change', filterSubcategories);
+    filterSubcategories(); // Run on page load
+</script>
 @endsection

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Hash;
@@ -33,10 +34,25 @@ return new class extends Migration
             ]
         );
         $staff->assignRole('staff');
+
+        // CREATE DEFAULT CATEGORIES
+        Category::firstOrCreate(
+            ['slug' => 'pastries'],
+            ['name' => 'Pastries']
+        );
+
+        Category::firstOrCreate(
+            ['slug' => 'drinks'],
+            ['name' => 'Drinks']
+        );
     }
 
     public function down(): void
     {
+        // DELETE DEFAULT CATEGORIES ON ROLLBACK
+        Category::where('slug', 'pastries')->delete();
+        Category::where('slug', 'drinks')->delete();
+
         // DELETE USERS ON ROLLBACK
         User::where('email', 'joan@beanthere.com')->delete();
         User::where('email', 'bianca@beanthere.com')->delete();

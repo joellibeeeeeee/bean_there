@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -12,14 +13,15 @@ class AdminProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->orderByDesc('id')->paginate(20);
+        $products = Product::with('category', 'subcategory')->orderByDesc('id')->paginate(20);
         return view('admin.catalog', compact('products'));
     }
 
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.products.create', compact('categories'));
+        $subcategories = Subcategory::orderBy('name')->get();
+        return view('admin.products.create', compact('categories', 'subcategories'));
     }
 
     public function store(Request $request)
@@ -27,6 +29,7 @@ class AdminProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:subcategories,id',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -55,7 +58,8 @@ class AdminProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.products.edit', compact('product', 'categories'));
+        $subcategories = Subcategory::orderBy('name')->get();
+        return view('admin.products.edit', compact('product', 'categories', 'subcategories'));
     }
 
     public function update(Request $request, Product $product)
@@ -63,6 +67,7 @@ class AdminProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'required|exists:subcategories,id',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',

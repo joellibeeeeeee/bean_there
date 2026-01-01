@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminSubcategoryController;
 use App\Http\Controllers\StaffProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminOrdersController;
@@ -116,6 +117,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             'update' => 'admin.products.update',
             'destroy' => 'admin.products.destroy',
             'show' => 'admin.products.show',
+        ]);
+
+        // ADMIN SUBCATEGORIES CRUD
+        Route::resource('subcategories', AdminSubcategoryController::class)->except(['show'])->names([
+            'index' => 'admin.subcategories.index',
+            'create' => 'admin.subcategories.create',
+            'store' => 'admin.subcategories.store',
+            'edit' => 'admin.subcategories.edit',
+            'update' => 'admin.subcategories.update',
+            'destroy' => 'admin.subcategories.destroy',
         ]);
     });
 });

@@ -25,13 +25,24 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4A2C2A;">Category</label>
-                    <select name="category_id" style="width: 100%; padding: 12px 15px; border-radius: 12px; border: 1.5px solid #F0F2F5; outline: none; background: white; cursor: pointer; font-family: 'Poppins', sans-serif;">
+                    <select name="category_id" id="category_id" style="width: 100%; padding: 12px 15px; border-radius: 12px; border: 1.5px solid #F0F2F5; outline: none; background: white; cursor: pointer; font-family: 'Poppins', sans-serif;">
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                         @endforeach
                     </select>
                     @error('category_id')<div style="color:#c0392b; font-size:12px; margin-top:4px;">{{ $message }}</div>@enderror
                 </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4A2C2A;">Subcategory</label>
+                <select name="subcategory_id" id="subcategory_id" required style="width: 100%; padding: 12px 15px; border-radius: 12px; border: 1.5px solid #F0F2F5; outline: none; background: white; cursor: pointer; font-family: 'Poppins', sans-serif;">
+                    <option value="">-- Select Subcategory --</option>
+                    @foreach($subcategories ?? [] as $sub)
+                        <option value="{{ $sub->id }}" data-category="{{ $sub->category_id }}" {{ old('subcategory_id') == $sub->id ? 'selected' : '' }}>{{ $sub->name }}</option>
+                    @endforeach
+                </select>
+                @error('subcategory_id')<div style="color:#c0392b; font-size:12px; margin-top:4px;">{{ $message }}</div>@enderror
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -137,6 +148,27 @@
             reader.readAsDataURL(file);
         }
     }
+
+    // FILTER SUBCATEGORIES BASED ON SELECTED CATEGORY
+    const categorySelect = document.getElementById('category_id');
+    const subcategorySelect = document.getElementById('subcategory_id');
+    const subcategoryOptions = subcategorySelect.querySelectorAll('option[data-category]');
+
+    function filterSubcategories() {
+        const selectedCategory = categorySelect.value;
+        subcategorySelect.value = '';
+        
+        subcategoryOptions.forEach(option => {
+            if (option.dataset.category === selectedCategory) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    }
+
+    categorySelect.addEventListener('change', filterSubcategories);
+    filterSubcategories(); // Run on page load
 
 </script>
 @endsection

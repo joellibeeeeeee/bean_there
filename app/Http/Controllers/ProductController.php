@@ -21,15 +21,6 @@ class ProductController extends Controller
                 ->get()
             : collect();
 
-        // GET PRODUCTS WITHOUT SUBCATEGORY (DIRECTLY UNDER MAIN CATEGORY)
-        $productsWithoutSubcategory = $category 
-            ? Product::where('category_id', $category->id)
-                ->whereNull('subcategory_id')
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get()
-            : collect();
-
         $view = match ($slug) {
             'drinks' => 'customer.drinks',
             'pastries' => 'customer.pastries',
@@ -39,7 +30,6 @@ class ProductController extends Controller
         return view($view, [
             'category' => $category,
             'subcategories' => $subcategories,
-            'productsWithoutSubcategory' => $productsWithoutSubcategory,
         ]);
     }
 
