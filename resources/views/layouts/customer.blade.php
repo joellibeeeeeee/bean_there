@@ -325,19 +325,25 @@
                 @auth 
                     onclick="window.location.href='{{ route('orders.index') }}'" 
                 @else 
-                    onclick="alert('Please login first to view your orders.'); window.location.href='{{ route('login') }}';" 
+                    onclick="showLoginModal('orders')" 
                 @endauth>
                 <img src="{{ asset('images/Track.png') }}" alt="Track">
             </div>
             
-            <a href="{{ route('cart.index') }}" class="icon-circle {{ request()->routeIs('cart.index') ? 'active-page' : '' }}">
-                <img src="{{ asset('images/Cart.png') }}" alt="Cart">
-                @if(session('cart') && count(session('cart')) > 0)
-                    <span class="cart-badge">
-                        {{ array_sum(array_column(session('cart'), 'quantity')) }}
-                    </span>
-                @endif
-            </a>
+            @auth
+                <a href="{{ route('cart.index') }}" class="icon-circle {{ request()->routeIs('cart.index') ? 'active-page' : '' }}">
+                    <img src="{{ asset('images/Cart.png') }}" alt="Cart">
+                    @if(session('cart') && count(session('cart')) > 0)
+                        <span class="cart-badge">
+                            {{ array_sum(array_column(session('cart'), 'quantity')) }}
+                        </span>
+                    @endif
+                </a>
+            @else
+                <div class="icon-circle" style="cursor: pointer;" onclick="showLoginModal('cart')">
+                    <img src="{{ asset('images/Cart.png') }}" alt="Cart">
+                </div>
+            @endauth
 
             @guest
                 <a href="{{ route('login') }}" class="icon-circle {{ request()->is('login') || request()->is('register') ? 'active-page' : '' }}">
@@ -467,6 +473,119 @@
             });
         </script>
     @endif
+
+    <!-- Login Required Modal -->
+    <div id="login-modal-overlay" class="login-modal-overlay" style="display: none;">
+        <div class="login-modal">
+            <div class="login-modal-header">
+                <i class="fa-solid fa-lock" style="color: #4A2C2A; font-size: 2.5rem;"></i>
+                <h2>Login Required</h2>
+            </div>
+            <div class="login-modal-content">
+                <p id="login-modal-message">Please login first to view your order history.</p>
+            </div>
+            <button id="login-modal-btn" class="login-modal-btn">OK, Login Now</button>
+        </div>
+    </div>
+
+    <style>
+        .login-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .login-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .login-modal {
+            background: #FDF9F0;
+            border: 2px solid #4A2C2A;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            color: #4A2C2A;
+            transform: scale(0.9) translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .login-modal-overlay.show .login-modal {
+            transform: scale(1) translateY(0);
+        }
+        .login-modal-header h2 {
+            font-family: 'Cooper Black', serif;
+            font-size: 1.5rem;
+            margin: 15px 0 10px 0;
+            color: #4A2C2A;
+        }
+        .login-modal-content p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0;
+            color: #5a4a48;
+        }
+        .login-modal-btn {
+            background-color: #4A2C2A;
+            color: #FDF9F0;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+        .login-modal-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+    </style>
+
+    <script>
+        function showLoginModal(type) {
+            const messages = {
+                'orders': 'Please login first to view your order history.',
+                'cart': 'Please login first to access your cart.'
+            };
+            document.getElementById('login-modal-message').textContent = messages[type] || messages['orders'];
+            const overlay = document.getElementById('login-modal-overlay');
+            overlay.style.display = 'flex';
+            // Trigger reflow for animation
+            overlay.offsetHeight;
+            overlay.classList.add('show');
+        }
+        function hideLoginModal() {
+            const overlay = document.getElementById('login-modal-overlay');
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
+        document.getElementById('login-modal-btn').addEventListener('click', function() {
+            window.location.href = '{{ route("login") }}';
+        });
+        document.getElementById('login-modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideLoginModal();
+            }
+        });
+    </script>
 
     <footer class="main-footer">
         <div class="footer-container">
